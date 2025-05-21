@@ -33,11 +33,12 @@ function best_woo_alerts_init() {
             'orderby' => 'date',
             'order' => 'DESC',
             'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
+            'type' => 'shop_order', // Only include actual orders, not refunds
         );
         
         $orders = wc_get_orders($args);
         
-        if (!empty($orders)) {
+        if (!empty($orders) && $orders[0] instanceof WC_Order) {
             $latest_order = $orders[0];
             $order_number = $latest_order->get_order_number(); // This gets the actual displayed order number
             wp_send_json_success(array('order_number' => $order_number));
@@ -64,7 +65,7 @@ function best_woo_alerts_init() {
     });
 
     // Enqueue JS for admin dashboard
-    add_action('admin_enqueue_scripts', function() {
+    add_action('admin_enqueue_scripts', function($hook) {
         if (!current_user_can('manage_woocommerce')) return;
         
         // Get latest order number using WooCommerce's API
@@ -73,12 +74,13 @@ function best_woo_alerts_init() {
             'orderby' => 'date',
             'order' => 'DESC',
             'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
+            'type' => 'shop_order', // Only include actual orders, not refunds
         );
         
         $orders = wc_get_orders($args);
         $order_number = 0;
         
-        if (!empty($orders)) {
+        if (!empty($orders) && $orders[0] instanceof WC_Order) {
             $latest_order = $orders[0];
             $order_number = $latest_order->get_order_number();
         }
