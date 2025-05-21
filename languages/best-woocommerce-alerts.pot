@@ -1,0 +1,63 @@
+# Copyright (C) 2024 Florian.ie
+# This file is distributed under the GPL v2 or later.
+msgid ""
+msgstr ""
+"Project-Id-Version: Best WooCommerce Alerts 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/best-woocommerce-alerts\n"
+"Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"POT-Creation-Date: 2024-03-21T12:00:00+00:00\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"X-Generator: WP-CLI 2.8.1\n"
+"X-Domain: best-woocommerce-alerts\n"
+
+#. Plugin Name of the plugin
+msgid "Best WooCommerce Alerts"
+msgstr ""
+
+#. Plugin URI of the plugin
+msgid "https://wordpress.org/plugins/best-woocommerce-alerts/"
+msgstr ""
+
+#. Description of the plugin
+msgid "Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received."
+msgstr ""
+
+#. Author of the plugin
+msgid "Florian.ie"
+msgstr ""
+
+#. Author URI of the plugin
+msgid "https://github.com/xadacka"
+msgstr ""
+
+#: florians-alerter.php:19
+msgid "Best WooCommerce Alerts requires WooCommerce to be installed and activated."
+msgstr ""
+
+#: florians-alerter.php:142
+msgid "You do not have sufficient permissions to access this page."
+msgstr ""
+
+#: florians-alerter.php:148
+msgid "Best WooCommerce Alerts Settings"
+msgstr ""
+
+#: florians-alerter.php:155
+msgid "Alert Sound"
+msgstr ""
+
+#: florians-alerter.php:160
+msgid "Select an MP3 file from your media library or enter a URL."
+msgstr ""
+
+#: florians-alerter.php:165
+msgid "Reset Alerts"
+msgstr ""
+
+#: florians-alerter.php:168
+msgid "Clears your device's alert history."
+msgstr "" 

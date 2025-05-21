@@ -1,13 +1,25 @@
 <?php
 /*
 Plugin Name: Best WooCommerce Alerts
+Plugin URI: https://wordpress.org/plugins/best-woocommerce-alerts/
 Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received.
-Version: 1.0
+Version: 1.0.0
+Requires at least: 5.0
+Requires PHP: 7.2
 Author: Florian.ie
 Author URI: https://github.com/xadacka
+License: GPL v2 or later
+License URI: https://www.gnu.org/licenses/gpl-2.0.html
+Text Domain: best-woocommerce-alerts
+Domain Path: /languages
+WC requires at least: 6.0
+WC tested up to: 8.5
 */
 
-if (!defined('ABSPATH')) exit;
+// Prevent direct access
+if (!defined('ABSPATH')) {
+    exit;
+}
 
 // Check if WooCommerce is active
 function best_woo_alerts_init() {
