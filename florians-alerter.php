@@ -9,48 +9,103 @@ Author URI: https://github.com/xadacka
 
 if (!defined('ABSPATH')) exit;
 
-// Add AJAX endpoint
-add_action('wp_ajax_best_woo_alerts_check', function() {
-    check_ajax_referer('best_woo_alerts_nonce', 'nonce');
-    if (!current_user_can('manage_woocommerce')) wp_send_json_error();
-    
-    // Get the most recent order using WooCommerce's API
-    $args = array(
-        'limit' => 1,
-        'orderby' => 'date',
-        'order' => 'DESC',
-        'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
-    );
-    
-    $orders = wc_get_orders($args);
-    
-    if (!empty($orders)) {
-        $latest_order = $orders[0];
-        $order_number = $latest_order->get_order_number(); // This gets the actual displayed order number
-        wp_send_json_success(array('order_number' => $order_number));
-    } else {
-        wp_send_json_success(array('order_number' => 0));
+// Check if WooCommerce is active
+function best_woo_alerts_init() {
+    if (!class_exists('WooCommerce')) {
+        add_action('admin_notices', function() {
+            ?>
+            <div class="error">
+                <p>Best WooCommerce Alerts requires WooCommerce to be installed and activated.</p>
+            </div>
+            <?php
+        });
+        return;
     }
-});
 
-// Add settings page under WooCommerce menu
-add_action('admin_menu', function() {
-    add_submenu_page(
-        'woocommerce',
-        'Best WooCommerce Alerts Settings',
-        'Order Alerts',
-        'manage_woocommerce',
-        'best-woo-alerts',
-        'best_woo_alerts_settings_page'
-    );
-});
+    // Add AJAX endpoint
+    add_action('wp_ajax_best_woo_alerts_check', function() {
+        check_ajax_referer('best_woo_alerts_nonce', 'nonce');
+        if (!current_user_can('manage_woocommerce')) wp_send_json_error();
+        
+        // Get the most recent order using WooCommerce's API
+        $args = array(
+            'limit' => 1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
+        );
+        
+        $orders = wc_get_orders($args);
+        
+        if (!empty($orders)) {
+            $latest_order = $orders[0];
+            $order_number = $latest_order->get_order_number(); // This gets the actual displayed order number
+            wp_send_json_success(array('order_number' => $order_number));
+        } else {
+            wp_send_json_success(array('order_number' => 0));
+        }
+    });
 
-// Register settings
-add_action('admin_init', function() {
-    register_setting('best_woo_alerts_options', 'best_woo_alerts_sound');
-});
+    // Add settings page under WooCommerce menu
+    add_action('admin_menu', function() {
+        add_submenu_page(
+            'woocommerce',
+            'Best WooCommerce Alerts Settings',
+            'Order Alerts',
+            'manage_woocommerce',
+            'best-woo-alerts',
+            'best_woo_alerts_settings_page'
+        );
+    });
 
+    // Register settings
+    add_action('admin_init', function() {
+        register_setting('best_woo_alerts_options', 'best_woo_alerts_sound');
+    });
+
+    // Enqueue JS for admin dashboard
+    add_action('admin_enqueue_scripts', function() {
+        if (!current_user_can('manage_woocommerce')) return;
+        
+        // Get latest order number using WooCommerce's API
+        $args = array(
+            'limit' => 1,
+            'orderby' => 'date',
+            'order' => 'DESC',
+            'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
+        );
+        
+        $orders = wc_get_orders($args);
+        $order_number = 0;
+        
+        if (!empty($orders)) {
+            $latest_order = $orders[0];
+            $order_number = $latest_order->get_order_number();
+        }
+        
+        wp_enqueue_script(
+            'best-woo-alerts-js',
+            plugin_dir_url(__FILE__) . 'alerter.js',
+            ['jquery'],
+            time(),
+            true
+        );
+        
+        wp_localize_script('best-woo-alerts-js', 'bestWooAlerter', [
+            'ajax_url' => admin_url('admin-ajax.php'),
+            'nonce'    => wp_create_nonce('best_woo_alerts_nonce'),
+            'sound'    => get_option('best_woo_alerts_sound', plugin_dir_url(__FILE__) . 'defaultalert.mp3'),
+            'current_order_number' => $order_number
+        ]);
+    });
+}
+
+// Settings page HTML
 function best_woo_alerts_settings_page() {
+    if (!current_user_can('manage_woocommerce')) {
+        wp_die(__('You do not have sufficient permissions to access this page.'));
+    }
+
     wp_enqueue_media();
     ?>
     <div class="wrap">
@@ -116,38 +171,5 @@ function best_woo_alerts_settings_page() {
     <?php
 }
 
-// Enqueue JS for admin dashboard
-add_action('admin_enqueue_scripts', function() {
-    if (!current_user_can('manage_woocommerce')) return;
-    
-    // Get latest order number using WooCommerce's API
-    $args = array(
-        'limit' => 1,
-        'orderby' => 'date',
-        'order' => 'DESC',
-        'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
-    );
-    
-    $orders = wc_get_orders($args);
-    $order_number = 0;
-    
-    if (!empty($orders)) {
-        $latest_order = $orders[0];
-        $order_number = $latest_order->get_order_number();
-    }
-    
-    wp_enqueue_script(
-        'best-woo-alerts-js',
-        plugin_dir_url(__FILE__) . 'alerter.js',
-        ['jquery'],
-        time(),
-        true
-    );
-    
-    wp_localize_script('best-woo-alerts-js', 'bestWooAlerter', [
-        'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce'    => wp_create_nonce('best_woo_alerts_nonce'),
-        'sound'    => get_option('best_woo_alerts_sound', plugin_dir_url(__FILE__) . 'defaultalert.mp3'),
-        'current_order_number' => $order_number
-    ]);
-});
+// Initialize the plugin after WooCommerce is loaded
+add_action('plugins_loaded', 'best_woo_alerts_init');
