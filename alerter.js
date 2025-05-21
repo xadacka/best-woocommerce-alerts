@@ -1,22 +1,22 @@
 jQuery(function($) {
-    console.log('Florians Alerter initializing...');
+    console.log('Best WooCommerce Alerts initializing...');
     
     // Handle variable name issue if it exists
-    if (typeof floriansAlerter === 'undefined' && typeof florinsAlerter !== 'undefined') {
-        window.floriansAlerter = window.florinsAlerter;
+    if (typeof bestWooAlerter === 'undefined' && typeof floriansAlerter !== 'undefined') {
+        window.bestWooAlerter = window.floriansAlerter;
     }
     
     // Guard against missing script variables
-    if (typeof floriansAlerter === 'undefined') {
-        console.error('Florians Alerter not initialized properly');
+    if (typeof bestWooAlerter === 'undefined') {
+        console.error('Best WooCommerce Alerts not initialized properly');
         return;
     }
     
     // Use a SINGLE localStorage key for simplicity
-    const STORAGE_KEY = 'florians_alert_last_order';
+    const STORAGE_KEY = 'best_woo_alert_last_order';
     
     // Ensure we have integers for all numeric values
-    let currentOrderNumber = parseInt(floriansAlerter.current_order_number || '0', 10);
+    let currentOrderNumber = parseInt(bestWooAlerter.current_order_number || '0', 10);
     
     // Clean up localStorage for this key and ensure it's an integer
     let storedOrderNumber = localStorage.getItem(STORAGE_KEY);
@@ -34,7 +34,7 @@ jQuery(function($) {
     
     // Add styles
     $('<style>').text(`
-        #florians-alert {
+        #best-woo-alert {
             position: fixed;
             top: 0;
             left: 0;
@@ -46,16 +46,16 @@ jQuery(function($) {
             justify-content: center;
             align-items: center;
             flex-direction: column;
-            animation: florians-flash 1s infinite;
+            animation: best-woo-flash 1s infinite;
         }
         
-        @keyframes florians-flash {
+        @keyframes best-woo-flash {
             0% { background: rgba(255, 0, 0, 0.9); }
             50% { background: rgba(255, 0, 0, 0.7); }
             100% { background: rgba(255, 0, 0, 0.9); }
         }
         
-        #florians-alert-text {
+        #best-woo-alert-text {
             color: white;
             font-size: 48px;
             font-weight: bold;
@@ -63,7 +63,7 @@ jQuery(function($) {
             text-align: center;
         }
         
-        #florians-alert-dismiss {
+        #best-woo-alert-dismiss {
             background: white;
             color: red;
             border: none;
@@ -74,7 +74,7 @@ jQuery(function($) {
             cursor: pointer;
         }
         
-        #florians-connection {
+        #best-woo-connection {
             position: fixed;
             bottom: 20px;
             right: 20px;
@@ -87,12 +87,12 @@ jQuery(function($) {
     `).appendTo('head');
     
     // Add connection indicator
-    $('<div id="florians-connection">Connected</div>').appendTo('body');
+    $('<div id="best-woo-connection">Connected</div>').appendTo('body');
     
     // Functions
     function playSound() {
         try {
-            const soundUrl = floriansAlerter.sound || 'https://cdn.pixabay.com/audio/2022/10/16/audio_12c6fae5b2.mp3';
+            const soundUrl = bestWooAlerter.sound || plugin_dir_url(__FILE__) + 'defaultalert.mp3';
             audioElement = new Audio(soundUrl);
             audioElement.loop = true;
             audioElement.play().catch(e => console.log('Sound autoplay prevented:', e));
@@ -105,9 +105,9 @@ jQuery(function($) {
         if (alertActive) return;
         
         const alert = $(`
-            <div id="florians-alert">
-                <div id="florians-alert-text">NEW ORDER! #${currentOrderNumber}</div>
-                <button id="florians-alert-dismiss">I've seen this</button>
+            <div id="best-woo-alert">
+                <div id="best-woo-alert-text">NEW ORDER! #${currentOrderNumber}</div>
+                <button id="best-woo-alert-dismiss">I've seen this</button>
             </div>
         `);
         
@@ -119,7 +119,7 @@ jQuery(function($) {
     }
     
     function dismissAlert() {
-        $('#florians-alert').remove();
+        $('#best-woo-alert').remove();
         if (audioElement) {
             audioElement.pause();
             audioElement.currentTime = 0;
@@ -134,22 +134,22 @@ jQuery(function($) {
     }
     
     function updateConnectionStatus(connected) {
-        $('#florians-connection')
+        $('#best-woo-connection')
             .text(connected ? 'Connected' : 'Disconnected')
             .css('background', connected ? '#4CAF50' : '#F44336');
     }
     
     // Dismiss button event
-    $(document).on('click', '#florians-alert-dismiss', dismissAlert);
+    $(document).on('click', '#best-woo-alert-dismiss', dismissAlert);
     
     // Check for new orders
     function checkForNewOrders() {
         $.ajax({
-            url: floriansAlerter.ajax_url,
+            url: bestWooAlerter.ajax_url,
             method: 'POST',
             data: {
-                action: 'florians_alerter_check',
-                nonce: floriansAlerter.nonce
+                action: 'best_woo_alerts_check',
+                nonce: bestWooAlerter.nonce
             },
             success: function(response) {
                 updateConnectionStatus(true);
@@ -202,5 +202,5 @@ jQuery(function($) {
     // Poll for new orders
     setInterval(checkForNewOrders, 15000);
     
-    console.log('Florians Alerter fully initialized');
+    console.log('Best WooCommerce Alerts fully initialized');
 });

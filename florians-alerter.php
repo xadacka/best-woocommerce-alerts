@@ -1,16 +1,17 @@
 <?php
 /*
-Plugin Name: Florians Alerter
+Plugin Name: Best WooCommerce Alerts
 Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received.
 Version: 1.0
-Author: Florian Stravock
+Author: Florian.ie
+Author URI: https://github.com/xadacka
 */
 
 if (!defined('ABSPATH')) exit;
 
 // Add AJAX endpoint
-add_action('wp_ajax_florians_alerter_check', function() {
-    check_ajax_referer('florians_alerter_nonce', 'nonce');
+add_action('wp_ajax_best_woo_alerts_check', function() {
+    check_ajax_referer('best_woo_alerts_nonce', 'nonce');
     if (!current_user_can('manage_woocommerce')) wp_send_json_error();
     
     // Get the most recent order using WooCommerce's API
@@ -18,6 +19,7 @@ add_action('wp_ajax_florians_alerter_check', function() {
         'limit' => 1,
         'orderby' => 'date',
         'order' => 'DESC',
+        'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
     );
     
     $orders = wc_get_orders($args);
@@ -31,44 +33,45 @@ add_action('wp_ajax_florians_alerter_check', function() {
     }
 });
 
-// Add settings page
+// Add settings page under WooCommerce menu
 add_action('admin_menu', function() {
-    add_options_page(
-        'Florians Alerter Settings',
-        'Order Alerter',
-        'manage_options',
-        'florians-alerter',
-        'florians_alerter_settings_page'
+    add_submenu_page(
+        'woocommerce',
+        'Best WooCommerce Alerts Settings',
+        'Order Alerts',
+        'manage_woocommerce',
+        'best-woo-alerts',
+        'best_woo_alerts_settings_page'
     );
 });
 
 // Register settings
 add_action('admin_init', function() {
-    register_setting('florians_alerter_options', 'florians_alerter_sound');
+    register_setting('best_woo_alerts_options', 'best_woo_alerts_sound');
 });
 
-function florians_alerter_settings_page() {
+function best_woo_alerts_settings_page() {
     wp_enqueue_media();
     ?>
     <div class="wrap">
-        <h1>Florians Alerter Settings</h1>
+        <h1>Best WooCommerce Alerts Settings</h1>
         <form method="post" action="options.php">
-            <?php settings_fields('florians_alerter_options'); ?>
+            <?php settings_fields('best_woo_alerts_options'); ?>
             <table class="form-table">
                 <tr>
                     <th scope="row">Alert Sound</th>
                     <td>
-                        <input type="text" id="florians_alerter_sound" name="florians_alerter_sound" 
-                               value="<?php echo esc_attr(get_option('florians_alerter_sound')); ?>" class="regular-text" />
-                        <button type="button" class="button" id="florians_sound_upload">Choose Sound</button>
-                        <button type="button" class="button" id="florians_sound_test">Test Sound</button>
+                        <input type="text" id="best_woo_alerts_sound" name="best_woo_alerts_sound" 
+                               value="<?php echo esc_attr(get_option('best_woo_alerts_sound')); ?>" class="regular-text" />
+                        <button type="button" class="button" id="best_woo_sound_upload">Choose Sound</button>
+                        <button type="button" class="button" id="best_woo_sound_test">Test Sound</button>
                         <p class="description">Select an MP3 file from your media library or enter a URL.</p>
                     </td>
                 </tr>
                 <tr>
                     <th scope="row">Reset Alerts</th>
                     <td>
-                        <button type="button" class="button" id="florians_reset">Reset Alert State</button>
+                        <button type="button" class="button" id="best_woo_reset">Reset Alert State</button>
                         <p class="description">Clears your device's alert history.</p>
                     </td>
                 </tr>
@@ -79,7 +82,7 @@ function florians_alerter_settings_page() {
     <script>
     jQuery(document).ready(function($) {
         // Media uploader
-        $('#florians_sound_upload').on('click', function(e) {
+        $('#best_woo_sound_upload').on('click', function(e) {
             e.preventDefault();
             var uploader = wp.media({
                 title: 'Select Sound File',
@@ -88,14 +91,14 @@ function florians_alerter_settings_page() {
                 multiple: false
             }).on('select', function() {
                 var attachment = uploader.state().get('selection').first().toJSON();
-                $('#florians_alerter_sound').val(attachment.url);
+                $('#best_woo_alerts_sound').val(attachment.url);
             }).open();
         });
 
         // Test sound
-        $('#florians_sound_test').on('click', function(e) {
+        $('#best_woo_sound_test').on('click', function(e) {
             e.preventDefault();
-            var soundUrl = $('#florians_alerter_sound').val() || 'https://cdn.pixabay.com/audio/2022/10/16/audio_12c6fae5b2.mp3';
+            var soundUrl = $('#best_woo_alerts_sound').val() || plugin_dir_url(__FILE__) + 'defaultalert.mp3';
             var audio = new Audio(soundUrl);
             audio.play().catch(function(e) {
                 alert('Could not play sound. Try clicking somewhere on the page first.');
@@ -103,9 +106,9 @@ function florians_alerter_settings_page() {
         });
         
         // Reset alerts
-        $('#florians_reset').on('click', function(e) {
+        $('#best_woo_reset').on('click', function(e) {
             e.preventDefault();
-            localStorage.removeItem('florians_alert_last_order');
+            localStorage.removeItem('best_woo_alert_last_order');
             alert('Alert state has been reset for this device.');
         });
     });
@@ -122,27 +125,29 @@ add_action('admin_enqueue_scripts', function() {
         'limit' => 1,
         'orderby' => 'date',
         'order' => 'DESC',
+        'status' => array('wc-completed', 'wc-processing'), // Only include paid orders
     );
     
     $orders = wc_get_orders($args);
-    if ( $latest_order instanceof WC_Order ) {
-    $order_number = $latest_order->get_order_number();
-} else {
     $order_number = 0;
-}
+    
+    if (!empty($orders)) {
+        $latest_order = $orders[0];
+        $order_number = $latest_order->get_order_number();
+    }
     
     wp_enqueue_script(
-        'florians-alerter-js',
+        'best-woo-alerts-js',
         plugin_dir_url(__FILE__) . 'alerter.js',
         ['jquery'],
         time(),
         true
     );
     
-    wp_localize_script('florians-alerter-js', 'floriansAlerter', [
+    wp_localize_script('best-woo-alerts-js', 'bestWooAlerter', [
         'ajax_url' => admin_url('admin-ajax.php'),
-        'nonce'    => wp_create_nonce('florians_alerter_nonce'),
-        'sound'    => get_option('florians_alerter_sound', 'https://cdn.pixabay.com/audio/2022/10/16/audio_12c6fae5b2.mp3'),
+        'nonce'    => wp_create_nonce('best_woo_alerts_nonce'),
+        'sound'    => get_option('best_woo_alerts_sound', plugin_dir_url(__FILE__) . 'defaultalert.mp3'),
         'current_order_number' => $order_number
     ]);
 });
