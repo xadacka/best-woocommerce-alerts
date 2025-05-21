@@ -1,8 +1,8 @@
-=== Best WooCommerce Alerts ===
+=== Best Order Alerter for WooCommerce ===
 Contributors: florianstravock
-Tags: woocommerce, alerts, notifications, orders, sound, visual
+Tags: notifications, orders, sound, alerts, ecommerce
 Requires at least: 5.0
-Tested up to: 6.4
+Tested up to: 6.8
 Requires PHP: 7.2
 Stable tag: 1.0.0
 License: GPLv2 or later
@@ -14,7 +14,7 @@ Get instant visual and audio notifications when new paid WooCommerce orders arri
 
 == Description ==
 
-Best WooCommerce Alerts provides real-time notifications for your WooCommerce store, ensuring you never miss a paid order. When a new order is received and paid for, the plugin triggers both visual and audio alerts to grab your attention immediately.
+Best Order Alerter for WooCommerce provides real-time notifications for your WooCommerce store, ensuring you never miss a paid order. When a new order is received and paid for, the plugin triggers both visual and audio alerts to grab your attention immediately.
 
 = Key Features =
 
@@ -42,7 +42,7 @@ Best WooCommerce Alerts provides real-time notifications for your WooCommerce st
 
 == Installation ==
 
-1. Upload the plugin files to the `/wp-content/plugins/best-woocommerce-alerts` directory, or install the plugin through the WordPress plugins screen directly.
+1. Upload the plugin files to the `/wp-content/plugins/best-order-alerter-for-woocommerce` directory, or install the plugin through the WordPress plugins screen directly.
 2. Activate the plugin through the 'Plugins' screen in WordPress
 3. Go to WooCommerce > Order Alerts to customise your alert sound (optional)
 
@@ -78,4 +78,4 @@ No, the plugin is lightweight and only runs in the WordPress admin area.
 == Upgrade Notice ==
 
 = 1.0.0 =
-Initial release of Best WooCommerce Alerts 
+Initial release of Best Order Alerter for WooCommerce 

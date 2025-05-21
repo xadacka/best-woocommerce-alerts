@@ -2,8 +2,8 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Best WooCommerce Alerts 1.0.0\n"
-"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/best-woocommerce-alerts\n"
+"Project-Id-Version: Best Order Alerter for WooCommerce 1.0.0\n"
+"Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/best-order-alerter-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
 "MIME-Version: 1.0\n"
@@ -12,14 +12,14 @@ msgstr ""
 "POT-Creation-Date: 2024-03-21T12:00:00+00:00\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "X-Generator: WP-CLI 2.8.1\n"
-"X-Domain: best-woocommerce-alerts\n"
+"X-Domain: florians-alerter\n"
 
 #. Plugin Name of the plugin
-msgid "Best WooCommerce Alerts"
+msgid "Best Order Alerter for WooCommerce"
 msgstr ""
 
 #. Plugin URI of the plugin
-msgid "https://wordpress.org/plugins/best-woocommerce-alerts/"
+msgid "https://wordpress.org/plugins/best-order-alerter-for-woocommerce/"
 msgstr ""
 
 #. Description of the plugin
@@ -34,30 +34,47 @@ msgstr ""
 msgid "https://github.com/xadacka"
 msgstr ""
 
-#: florians-alerter.php:19
-msgid "Best WooCommerce Alerts requires WooCommerce to be installed and activated."
+msgid "Best Order Alerter for WooCommerce requires WooCommerce to be installed and activated."
 msgstr ""
 
-#: florians-alerter.php:142
 msgid "You do not have sufficient permissions to access this page."
 msgstr ""
 
-#: florians-alerter.php:148
-msgid "Best WooCommerce Alerts Settings"
+msgid "Order Alerts Settings"
 msgstr ""
 
-#: florians-alerter.php:155
+msgid "Order Alerts"
+msgstr ""
+
 msgid "Alert Sound"
 msgstr ""
 
-#: florians-alerter.php:160
+msgid "Choose Sound"
+msgstr ""
+
+msgid "Test Sound"
+msgstr ""
+
 msgid "Select an MP3 file from your media library or enter a URL."
 msgstr ""
 
-#: florians-alerter.php:165
 msgid "Reset Alerts"
 msgstr ""
 
-#: florians-alerter.php:168
+msgid "Reset Alert State"
+msgstr ""
+
 msgid "Clears your device's alert history."
+msgstr ""
+
+msgid "Select Sound File"
+msgstr ""
+
+msgid "Use this sound"
+msgstr ""
+
+msgid "Could not play sound. Try clicking somewhere on the page first."
+msgstr ""
+
+msgid "Alert state has been reset for this device."
 msgstr "" 

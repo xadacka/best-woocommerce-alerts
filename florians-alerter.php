@@ -1,7 +1,7 @@
 <?php
 /*
-Plugin Name: Best WooCommerce Alerts
-Plugin URI: https://wordpress.org/plugins/best-woocommerce-alerts/
+Plugin Name: Best Order Alerter for WooCommerce
+Plugin URI: https://wordpress.org/plugins/best-order-alerter-for-woocommerce/
 Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received.
 Version: 1.0.0
 Requires at least: 5.0
@@ -10,7 +10,7 @@ Author: Florian.ie
 Author URI: https://github.com/xadacka
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
-Text Domain: best-woocommerce-alerts
+Text Domain: florians-alerter
 Domain Path: /languages
 WC requires at least: 6.0
 WC tested up to: 8.5
@@ -27,7 +27,7 @@ function best_woo_alerts_init() {
         add_action('admin_notices', function() {
             ?>
             <div class="error">
-                <p>Best WooCommerce Alerts requires WooCommerce to be installed and activated.</p>
+                <p><?php esc_html_e('Best Order Alerter for WooCommerce requires WooCommerce to be installed and activated.', 'florians-alerter'); ?></p>
             </div>
             <?php
         });
@@ -63,17 +63,25 @@ function best_woo_alerts_init() {
     add_action('admin_menu', function() {
         add_submenu_page(
             'woocommerce',
-            'Best WooCommerce Alerts Settings',
-            'Order Alerts',
+            esc_html__('Order Alerts Settings', 'florians-alerter'),
+            esc_html__('Order Alerts', 'florians-alerter'),
             'manage_woocommerce',
             'best-woo-alerts',
             'best_woo_alerts_settings_page'
         );
     });
 
-    // Register settings
+    // Register settings with sanitization
     add_action('admin_init', function() {
-        register_setting('best_woo_alerts_options', 'best_woo_alerts_sound');
+        register_setting(
+            'best_woo_alerts_options',
+            'best_woo_alerts_sound',
+            array(
+                'type' => 'string',
+                'sanitize_callback' => 'esc_url_raw',
+                'default' => plugin_dir_url(__FILE__) . 'defaultalert.mp3'
+            )
+        );
     });
 
     // Enqueue JS for admin dashboard
@@ -117,31 +125,31 @@ function best_woo_alerts_init() {
 // Settings page HTML
 function best_woo_alerts_settings_page() {
     if (!current_user_can('manage_woocommerce')) {
-        wp_die(__('You do not have sufficient permissions to access this page.'));
+        wp_die(esc_html__('You do not have sufficient permissions to access this page.', 'florians-alerter'));
     }
 
     wp_enqueue_media();
     ?>
     <div class="wrap">
-        <h1>Best WooCommerce Alerts Settings</h1>
+        <h1><?php esc_html_e('Order Alerts Settings', 'florians-alerter'); ?></h1>
         <form method="post" action="options.php">
             <?php settings_fields('best_woo_alerts_options'); ?>
             <table class="form-table">
                 <tr>
-                    <th scope="row">Alert Sound</th>
+                    <th scope="row"><?php esc_html_e('Alert Sound', 'florians-alerter'); ?></th>
                     <td>
                         <input type="text" id="best_woo_alerts_sound" name="best_woo_alerts_sound" 
                                value="<?php echo esc_attr(get_option('best_woo_alerts_sound')); ?>" class="regular-text" />
-                        <button type="button" class="button" id="best_woo_sound_upload">Choose Sound</button>
-                        <button type="button" class="button" id="best_woo_sound_test">Test Sound</button>
-                        <p class="description">Select an MP3 file from your media library or enter a URL.</p>
+                        <button type="button" class="button" id="best_woo_sound_upload"><?php esc_html_e('Choose Sound', 'florians-alerter'); ?></button>
+                        <button type="button" class="button" id="best_woo_sound_test"><?php esc_html_e('Test Sound', 'florians-alerter'); ?></button>
+                        <p class="description"><?php esc_html_e('Select an MP3 file from your media library or enter a URL.', 'florians-alerter'); ?></p>
                     </td>
                 </tr>
                 <tr>
-                    <th scope="row">Reset Alerts</th>
+                    <th scope="row"><?php esc_html_e('Reset Alerts', 'florians-alerter'); ?></th>
                     <td>
-                        <button type="button" class="button" id="best_woo_reset">Reset Alert State</button>
-                        <p class="description">Clears your device's alert history.</p>
+                        <button type="button" class="button" id="best_woo_reset"><?php esc_html_e('Reset Alert State', 'florians-alerter'); ?></button>
+                        <p class="description"><?php esc_html_e('Clears your device\'s alert history.', 'florians-alerter'); ?></p>
                     </td>
                 </tr>
             </table>
@@ -154,8 +162,8 @@ function best_woo_alerts_settings_page() {
         $('#best_woo_sound_upload').on('click', function(e) {
             e.preventDefault();
             var uploader = wp.media({
-                title: 'Select Sound File',
-                button: {text: 'Use this sound'},
+                title: '<?php esc_html_e('Select Sound File', 'florians-alerter'); ?>',
+                button: {text: '<?php esc_html_e('Use this sound', 'florians-alerter'); ?>'},
                 library: {type: 'audio'},
                 multiple: false
             }).on('select', function() {
@@ -167,10 +175,10 @@ function best_woo_alerts_settings_page() {
         // Test sound
         $('#best_woo_sound_test').on('click', function(e) {
             e.preventDefault();
-            var soundUrl = $('#best_woo_alerts_sound').val() || plugin_dir_url(__FILE__) + 'defaultalert.mp3';
+            var soundUrl = $('#best_woo_alerts_sound').val() || '<?php echo esc_js(plugin_dir_url(__FILE__) . 'defaultalert.mp3'); ?>';
             var audio = new Audio(soundUrl);
             audio.play().catch(function(e) {
-                alert('Could not play sound. Try clicking somewhere on the page first.');
+                alert('<?php echo esc_js(__('Could not play sound. Try clicking somewhere on the page first.', 'florians-alerter')); ?>');
             });
         });
         
@@ -178,7 +186,7 @@ function best_woo_alerts_settings_page() {
         $('#best_woo_reset').on('click', function(e) {
             e.preventDefault();
             localStorage.removeItem('best_woo_alert_last_order');
-            alert('Alert state has been reset for this device.');
+            alert('<?php echo esc_js(__('Alert state has been reset for this device.', 'florians-alerter')); ?>');
         });
     });
     </script>
