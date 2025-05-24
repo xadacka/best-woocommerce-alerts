@@ -1,14 +1,15 @@
 === Best Order Alerter for WooCommerce ===
-Contributors: florianstravock
-Tags: woocommerce, orders, alerts, notifications, timestamp, sms, twilio
+Contributors: floriantech
+Tags: woocommerce, orders, alerts, notifications, timestamp, sms, twilio, hpos
 Requires at least: 5.0
 Tested up to: 6.5
 Requires PHP: 7.2
+Requires Plugins: woocommerce
 Stable tag: 1.0.2
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
-Real-time order alerts for WooCommerce that also fixes order timestamp issues and provides proper hooks for payment completion.
+Real-time order alerts for WooCommerce that also fixes order timestamp issues and provides proper hooks for payment completion. HPOS compatible.
 
 == Description ==
 
@@ -136,11 +137,13 @@ Yes, you can enable/disable this feature in the plugin settings.
 * Added: Order timestamp fix - orders now show payment completion time instead of creation time
 * Added: Integration hooks for other plugins to prevent premature notifications
 * Added: Full HPOS compatibility for WooCommerce's High Performance Order Storage
+* Added: Explicit HPOS compatibility declaration to prevent incompatibility warnings
 * Added: Settings option to enable/disable timestamp fixing
 * Added: Enhanced debug logging for payment completion events
 * Added: Integration guide for configuring other plugins (e.g., Twilio)
 * Fixed: Order timestamps now accurately reflect when payment was completed
 * Fixed: Prevents plugins like Twilio from sending SMS notifications on order creation
+* Fixed: HPOS incompatibility warning by properly declaring feature support
 * Changed: Plugin description updated to reflect new features
 * Changed: Enhanced error logging for better debugging
 

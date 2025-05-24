@@ -2,7 +2,7 @@
 /*
 Plugin Name: Best Order Alerter for WooCommerce
 Plugin URI: https://wordpress.org/plugins/best-order-alerter-for-woocommerce/
-Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received. Also fixes order timestamp issues and provides proper hooks for payment completion.
+Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received. Also fixes order timestamp issues and provides proper hooks for payment completion. HPOS compatible.
 Version: 1.0.2
 Requires at least: 5.0
 Requires PHP: 7.2
@@ -14,12 +14,20 @@ Text Domain: best-order-alerter-for-woocommerce
 Domain Path: /languages
 WC requires at least: 6.0
 WC tested up to: 8.5
+Requires Plugins: woocommerce
 */
 
 // Prevent direct access
 if (!defined('ABSPATH')) {
     exit;
 }
+
+// Declare HPOS compatibility
+add_action('before_woocommerce_init', function() {
+    if (class_exists('\Automattic\WooCommerce\Utilities\FeaturesUtil')) {
+        \Automattic\WooCommerce\Utilities\FeaturesUtil::declare_compatibility('custom_order_tables', __FILE__, true);
+    }
+});
 
 // Check if WooCommerce is active
 function best_woo_alerts_init() {

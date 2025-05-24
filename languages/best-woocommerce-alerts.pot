@@ -23,7 +23,7 @@ msgid "https://wordpress.org/plugins/best-order-alerter-for-woocommerce/"
 msgstr ""
 
 #. Description of the plugin
-msgid "Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received. Also fixes order timestamp issues and provides proper hooks for payment completion."
+msgid "Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received. Also fixes order timestamp issues and provides proper hooks for payment completion. HPOS compatible."
 msgstr ""
 
 #. Author of the plugin

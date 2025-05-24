@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - **Order Timestamp Fix**: Orders now show payment completion time instead of creation time
 - **Integration Hooks**: Proper action hooks for other plugins to prevent premature notifications
 - **HPOS Compatibility**: Full support for WooCommerce High Performance Order Storage
+- **HPOS Declaration**: Explicit compatibility declaration to prevent WordPress warnings
 - **Settings Option**: Toggle to enable/disable timestamp fixing
 - **Debug Logging**: Enhanced logging for payment completion events
 - **Integration Guide**: Documentation for configuring other plugins (e.g., Twilio)
@@ -15,6 +16,7 @@ All notable changes to this project will be documented in this file.
 ### Fixed
 - Order timestamps now accurately reflect when payment was completed, not when order was created
 - Prevents plugins like Twilio from sending SMS notifications on order creation instead of payment completion
+- HPOS incompatibility warning by properly declaring feature support
 - Improved compatibility with WooCommerce's High Performance Order Storage (HPOS)
 
 ### Changed
