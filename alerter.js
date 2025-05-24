@@ -28,9 +28,11 @@ jQuery(function($) {
     console.log('Current order number (from server):', currentOrderNumber);
     console.log('Last seen order number (from localStorage):', lastSeenOrderNumber);
     
-    // Initialize audio
+    // Initialize audio with better handling
     let audioElement = null;
     let alertActive = false;
+    let soundEnabled = false;
+    let userInteracted = false;
     
     // Add styles
     $('<style>').text(`
@@ -72,6 +74,22 @@ jQuery(function($) {
             font-weight: bold;
             border-radius: 5px;
             cursor: pointer;
+            margin-bottom: 15px;
+        }
+        
+        #best-woo-alert-enable-sound {
+            background: white;
+            color: #333;
+            border: none;
+            padding: 10px 20px;
+            font-size: 16px;
+            border-radius: 5px;
+            cursor: pointer;
+            display: none;
+        }
+        
+        #best-woo-alert-enable-sound.show {
+            display: block;
         }
         
         #best-woo-connection {
@@ -83,6 +101,12 @@ jQuery(function($) {
             color: white;
             border-radius: 5px;
             z-index: 999999;
+            opacity: 0.8;
+            transition: opacity 0.3s;
+        }
+        
+        #best-woo-connection:hover {
+            opacity: 1;
         }
     `).appendTo('head');
     
@@ -90,15 +114,47 @@ jQuery(function($) {
     $('<div id="best-woo-connection">Connected</div>').appendTo('body');
     
     // Functions
-    function playSound() {
+    async function initializeAudio() {
         try {
             const soundUrl = bestWooAlerter.sound || plugin_dir_url(__FILE__) + 'defaultalert.mp3';
             audioElement = new Audio(soundUrl);
             audioElement.loop = true;
-            audioElement.play().catch(e => console.log('Sound autoplay prevented:', e));
+            
+            // Try to load the audio file
+            await audioElement.load();
+            soundEnabled = true;
+            return true;
+        } catch(e) {
+            console.error('Error initializing audio:', e);
+            return false;
+        }
+    }
+    
+    async function playSound() {
+        if (!audioElement) {
+            await initializeAudio();
+        }
+        
+        try {
+            if (soundEnabled && audioElement) {
+                const playPromise = audioElement.play();
+                if (playPromise !== undefined) {
+                    playPromise.catch(error => {
+                        console.log('Autoplay prevented:', error);
+                        soundEnabled = false;
+                        showSoundEnableButton();
+                    });
+                }
+            }
         } catch(e) {
             console.error('Error playing sound:', e);
+            soundEnabled = false;
+            showSoundEnableButton();
         }
+    }
+    
+    function showSoundEnableButton() {
+        $('#best-woo-alert-enable-sound').addClass('show');
     }
     
     function showAlert() {
@@ -106,8 +162,9 @@ jQuery(function($) {
         
         const alert = $(`
             <div id="best-woo-alert">
-                <div id="best-woo-alert-text">NEW ORDER! #${currentOrderNumber}</div>
-                <button id="best-woo-alert-dismiss">I've seen this</button>
+                <div id="best-woo-alert-text">${bestWooAlerter.i18n.new_order}${currentOrderNumber}</div>
+                <button id="best-woo-alert-dismiss">${bestWooAlerter.i18n.dismiss_alert}</button>
+                <button id="best-woo-alert-enable-sound">${bestWooAlerter.i18n.enable_sound}</button>
             </div>
         `);
         
@@ -135,12 +192,29 @@ jQuery(function($) {
     
     function updateConnectionStatus(connected) {
         $('#best-woo-connection')
-            .text(connected ? 'Connected' : 'Disconnected')
+            .text(connected ? bestWooAlerter.i18n.connected : bestWooAlerter.i18n.disconnected)
             .css('background', connected ? '#4CAF50' : '#F44336');
     }
     
-    // Dismiss button event
+    // Event handlers
     $(document).on('click', '#best-woo-alert-dismiss', dismissAlert);
+    
+    $(document).on('click', '#best-woo-alert-enable-sound', async function() {
+        userInteracted = true;
+        soundEnabled = await initializeAudio();
+        if (soundEnabled) {
+            playSound();
+            $(this).removeClass('show');
+        }
+    });
+    
+    // Initialize audio on any user interaction with the page
+    $(document).one('click keydown', async function() {
+        if (!userInteracted) {
+            userInteracted = true;
+            soundEnabled = await initializeAudio();
+        }
+    });
     
     // Check for new orders
     function checkForNewOrders() {
@@ -183,11 +257,14 @@ jQuery(function($) {
         });
     }
     
-    // Auto-refresh the orders page
+    // Auto-refresh the orders page using AJAX instead of full page reload
     if (window.location.pathname.includes('/wp-admin/admin.php') && 
         window.location.search.includes('page=wc-orders')) {
         setInterval(function() {
-            location.reload();
+            // Trigger WooCommerce's built-in AJAX refresh if available
+            if (typeof jQuery.fn.block === 'function') {
+                $('.wc-orders-list-table').closest('form').find('.refresh').trigger('click');
+            }
         }, 15000);
     }
     

@@ -1,81 +1,130 @@
-# Best WooCommerce Alerts
+# Best WooCommerce Alerter
 
-A powerful WordPress plugin that provides real-time alerts for WooCommerce orders. Get instant visual and audio notifications when new paid orders arrive, ensuring you never miss a sale.
+A WordPress plugin that provides real-time order alerts for WooCommerce and fixes common order timestamp and integration issues.
 
-## 🚀 Features
+## Features
 
-- **Real-Time Alerts**: Instant notifications when new paid orders are received
-- **Visual Alerts**: Full-screen red flash notification for maximum visibility
-- **Audio Alerts**: Customisable sound notifications
-- **Smart Filtering**: Only alerts for paid orders (processing or completed status)
-- **Connection Status**: Visual indicator showing real-time connection status
-- **Mobile Friendly**: Works perfectly on all devices
-- **Easy Setup**: No configuration needed - works out of the box
-- **Customisable**: Change alert sounds via WordPress media library or custom URL
+### 🔔 Real-time Order Alerts
+- Visual flash alerts when new orders are received
+- Customisable sound alerts
+- Admin dashboard notifications
+- Works only with actually paid orders (processing/completed)
 
-## 📋 Requirements
+### 🕒 Order Timestamp Fix
+- **Problem**: WooCommerce shows order creation time instead of payment completion time
+- **Solution**: Automatically updates order dates to show when payment was actually completed
+- **Result**: Orders show "2 minutes ago" instead of "1 hour ago" when recently paid
+
+### 🔗 Proper Integration Hooks
+- Provides correct hooks for other plugins (e.g., Twilio SMS)
+- Prevents premature notifications on order creation
+- Only triggers when payment is actually completed
+- Compatible with WooCommerce High Performance Order Storage (HPOS)
+
+## Installation
+
+### Automatic Installation (Recommended)
+1. In your WordPress admin, go to **Plugins → Add New**
+2. Search for "Best Order Alerter for WooCommerce"
+3. Click **Install Now** and then **Activate**
+4. Go to **WooCommerce → Order Alerts** to configure
+
+### Manual Installation
+1. Download the plugin zip file
+2. Go to **Plugins → Add New → Upload Plugin**
+3. Upload the zip file and click **Install Now**
+4. Click **Activate Plugin**
+5. Go to **WooCommerce → Order Alerts** to configure
+
+### Developer Installation
+1. Clone or download this repository
+2. Upload the plugin files to `/wp-content/plugins/best-woocommerce-alerts/`
+3. Activate the plugin through the 'Plugins' screen in WordPress
+4. Go to **WooCommerce → Order Alerts** to configure settings
+
+## Configuration
+
+### Basic Settings
+- **Alert Sound**: Choose custom MP3 files or use the default alert sound
+- **Test Sound**: Preview your selected alert sound
+- **Reset Alerts**: Clear your device's alert history
+
+### Advanced Settings
+- **Fix Order Timestamps**: Enable/disable automatic timestamp correction
+- When enabled, orders will display payment completion time instead of creation time
+
+## Integration with Other Plugins
+
+### Twilio SMS Plugin Fix
+
+If you're using a Twilio plugin that sends SMS notifications, you can prevent it from sending messages on order creation by modifying it to use our proper hooks:
+
+```php
+// Replace this line in your Twilio plugin:
+add_action('woocommerce_new_order', 'your_sms_function');
+
+// With this:
+add_action('best_woo_alerts_payment_completed', 'your_sms_function_with_payment_check', 10, 4);
+```
+
+See `INTEGRATION-GUIDE.md` for detailed integration instructions.
+
+## Requirements
 
 - WordPress 5.0 or higher
 - WooCommerce 6.0 or higher
-- Modern web browser with JavaScript enabled
+- PHP 7.2 or higher
 
-## 🔧 Installation
+## HPOS Compatibility
 
-1. Download the plugin
-2. Upload to your WordPress site via Plugins > Add New > Upload Plugin
-3. Activate the plugin
-4. Go to WooCommerce > Order Alerts to customise your alert sound (optional)
+Fully compatible with WooCommerce's High Performance Order Storage (HPOS). The plugin automatically detects HPOS and updates the appropriate database tables.
 
-## ⚙️ Configuration
+## Supported Order Statuses
 
-The plugin works immediately after activation with default settings. However, you can:
+The plugin only alerts for orders with these statuses:
+- `processing` (payment completed)
+- `completed` (order fulfilled)
 
-1. Change the alert sound:
-   - Navigate to WooCommerce > Order Alerts
-   - Either upload a new sound file or enter a URL
-   - Test the sound using the "Test Sound" button
+Excludes:
+- `pending` (awaiting payment)
+- `on-hold` (awaiting action)
+- `cancelled`, `refunded`, `failed`
 
-2. Reset alert state:
-   - If you need to reset which orders you've seen
-   - Go to WooCommerce > Order Alerts
-   - Click "Reset Alert State"
+## Features in Detail
 
-## 🔔 How It Works
+### Timestamp Correction
+When an order transitions from any unpaid status (`pending`, `on-hold`, etc.) to a paid status (`processing`, `completed`), the plugin:
 
-- Monitors for new WooCommerce orders in real-time
-- Only triggers for paid orders (status: processing or completed)
-- Shows a full-screen red flash with order number
-- Plays an audio alert (can be customised)
-- Alerts persist until acknowledged
-- Auto-reconnects if connection is lost
+1. Updates the order creation date to the current time
+2. Works with both traditional WordPress posts and HPOS
+3. Clears relevant caches
+4. Logs the change for debugging
 
-## 🛡️ Security
+### Integration Hooks
+The plugin provides these action hooks for other plugins:
 
-- Secure by default
-- Only works for logged-in WooCommerce managers
-- Uses WordPress nonces for AJAX calls
-- No sensitive data stored or transmitted
+- `best_woo_alerts_payment_completed` - Fires when payment is completed
+- `woocommerce_payment_actually_completed` - Generic payment completion hook
 
-## 🔄 Updates
+## Debugging
 
-The plugin checks for updates through the WordPress plugin repository. You'll be notified in your WordPress dashboard when updates are available.
+Enable WordPress debug logging to monitor the plugin:
 
-## 🌍 Localisation
+```php
+// In wp-config.php
+define('WP_DEBUG', true);
+define('WP_DEBUG_LOG', true);
+```
 
-- Interface text is minimal and easily translatable
-- Supports RTL languages
-- Time zones handled automatically
+Check `/wp-content/debug.log` for plugin activity.
 
-## 🆘 Support
+## Support
 
-For support, feature requests, or bug reports:
-1. Check the [documentation](https://wordpress.org/plugins/best-woocommerce-alerts/)
-2. Visit our [support forum](https://wordpress.org/support/plugin/best-woocommerce-alerts/)
-3. Visit the [plugin creator on GitHub](https://github.com/xadacka)
+For support or feature requests, please create an issue on the repository or contact support.
 
-## 📜 License
+## License
 
-This plugin is licensed under the GPL v2 or later.
+GPL v2 or later - see LICENSE file for details.
 
 ---
 
