@@ -5,7 +5,7 @@ Requires at least: 5.0
 Tested up to: 6.5
 Requires PHP: 7.2
 Requires Plugins: woocommerce
-Stable tag: 1.0.2
+Stable tag: 1.0.3
 License: GPL v2 or later
 License URI: https://www.gnu.org/licenses/gpl-2.0.html
 
@@ -132,6 +132,17 @@ Yes, you can enable/disable this feature in the plugin settings.
 4. WooCommerce orders list showing corrected timestamps
 
 == Changelog ==
+
+= 1.0.3 =
+* Added: Auto-refresh functionality for WooCommerce orders page (AJAX-based, no page reload)
+* Added: Live time updates - timestamps automatically count up (e.g., "6 minutes ago" becomes "7 minutes ago")
+* Added: Settings to control auto-refresh and live time updates
+* Added: Configurable refresh interval (30-600 seconds, default 2 minutes)
+* Added: Support for both new HPOS orders page and legacy orders page
+* Added: Visual refresh indicator when orders table is being updated
+* Added: Proper translation support for all relative time strings
+* Enhanced: Orders table refreshes immediately when new orders are detected
+* Enhanced: Better detection of different WooCommerce orders page layouts
 
 = 1.0.2 =
 * Added: Order timestamp fix - orders now show payment completion time instead of creation time

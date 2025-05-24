@@ -2,7 +2,7 @@
 # This file is distributed under the GPL v2 or later.
 msgid ""
 msgstr ""
-"Project-Id-Version: Best Order Alerter for WooCommerce 1.0.2\n"
+"Project-Id-Version: Best Order Alerter for WooCommerce 1.0.3\n"
 "Report-Msgid-Bugs-To: https://wordpress.org/support/plugin/best-order-alerter-for-woocommerce\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -67,6 +67,33 @@ msgstr ""
 msgid "When enabled, orders will show the time they were paid rather than when they were created. This fixes the issue where orders show \"1 hour ago\" even if they were just paid."
 msgstr ""
 
+msgid "Auto-Refresh Orders"
+msgstr ""
+
+msgid "Automatically refresh the orders table"
+msgstr ""
+
+msgid "When enabled, the WooCommerce orders page will automatically refresh to show new orders without requiring a page reload."
+msgstr ""
+
+msgid "Refresh Interval"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "How often to refresh the orders table (30-600 seconds). Default is 120 seconds (2 minutes)."
+msgstr ""
+
+msgid "Live Time Updates"
+msgstr ""
+
+msgid "Update relative timestamps in real-time"
+msgstr ""
+
+msgid "When enabled, timestamps like \"6 minutes ago\" will automatically update to \"7 minutes ago\" as time passes."
+msgstr ""
+
 msgid "Reset Alerts"
 msgstr ""
 
@@ -105,4 +132,49 @@ msgid "Disconnected"
 msgstr ""
 
 msgid "Could not play sound. Please click the Enable Sound button."
+msgstr ""
+
+msgid "Auto-refreshing orders..."
+msgstr ""
+
+msgid "just now"
+msgstr ""
+
+msgid "second"
+msgstr ""
+
+msgid "seconds"
+msgstr ""
+
+msgid "minute"
+msgstr ""
+
+msgid "minutes"
+msgstr ""
+
+msgid "hour"
+msgstr ""
+
+msgid "hours"
+msgstr ""
+
+msgid "day"
+msgstr ""
+
+msgid "days"
+msgstr ""
+
+msgid "week"
+msgstr ""
+
+msgid "weeks"
+msgstr ""
+
+msgid "month"
+msgstr ""
+
+msgid "months"
+msgstr ""
+
+msgid "ago"
 msgstr "" 

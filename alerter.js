@@ -34,6 +34,38 @@ jQuery(function($) {
     let soundEnabled = false;
     let userInteracted = false;
     
+    // Orders page detection and auto-refresh variables
+    let isOrdersPage = false;
+    let isNewOrdersPage = false;
+    let isLegacyOrdersPage = false;
+    let ordersRefreshInterval = null;
+    let timeUpdateInterval = null;
+    
+    // Detect which orders page we're on
+    function detectOrdersPage() {
+        const currentURL = window.location.href;
+        const currentPath = window.location.pathname;
+        const currentSearch = window.location.search;
+        
+        // New HPOS orders page
+        if (currentPath.includes('/wp-admin/admin.php') && currentSearch.includes('page=wc-orders')) {
+            isOrdersPage = true;
+            isNewOrdersPage = true;
+            console.log('Detected new WooCommerce orders page (HPOS)');
+            return true;
+        }
+        
+        // Legacy orders page (edit.php?post_type=shop_order)
+        if (currentPath.includes('/wp-admin/edit.php') && currentSearch.includes('post_type=shop_order')) {
+            isOrdersPage = true;
+            isLegacyOrdersPage = true;
+            console.log('Detected legacy WooCommerce orders page');
+            return true;
+        }
+        
+        return false;
+    }
+
     // Add styles
     $('<style>').text(`
         #best-woo-alert {
@@ -108,10 +140,33 @@ jQuery(function($) {
         #best-woo-connection:hover {
             opacity: 1;
         }
+        
+        .best-woo-refresh-indicator {
+            position: fixed;
+            top: 32px;
+            right: 20px;
+            background: #0073aa;
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 100000;
+            opacity: 0;
+            transition: opacity 0.3s;
+        }
+        
+        .best-woo-refresh-indicator.show {
+            opacity: 1;
+        }
     `).appendTo('head');
     
     // Add connection indicator
     $('<div id="best-woo-connection">Connected</div>').appendTo('body');
+    
+    // Add refresh indicator for orders page
+    if (detectOrdersPage()) {
+        $('<div class="best-woo-refresh-indicator">' + bestWooAlerter.i18n.auto_refreshing + '</div>').appendTo('body');
+    }
     
     // Functions
     async function initializeAudio() {
@@ -196,6 +251,185 @@ jQuery(function($) {
             .css('background', connected ? '#4CAF50' : '#F44336');
     }
     
+    // Orders page auto-refresh functionality
+    function showRefreshIndicator() {
+        $('.best-woo-refresh-indicator').addClass('show');
+        setTimeout(() => {
+            $('.best-woo-refresh-indicator').removeClass('show');
+        }, 2000);
+    }
+    
+    function refreshOrdersTable() {
+        if (!isOrdersPage) return;
+        
+        console.log('Refreshing orders table...');
+        showRefreshIndicator();
+        
+        if (isNewOrdersPage) {
+            // New HPOS orders page - try multiple approaches
+            
+            // Method 1: Trigger WooCommerce's built-in refresh button
+            const refreshButton = $('.wc-orders-list-table-refresh, .refresh');
+            if (refreshButton.length > 0) {
+                refreshButton.trigger('click');
+                console.log('Triggered WooCommerce refresh button');
+                return;
+            }
+            
+            // Method 2: Reload the table content via AJAX
+            const ordersTable = $('.wp-list-table.orders');
+            if (ordersTable.length > 0) {
+                const currentURL = window.location.href;
+                
+                $.ajax({
+                    url: currentURL,
+                    method: 'GET',
+                    success: function(response) {
+                        const newTable = $(response).find('.wp-list-table.orders');
+                        if (newTable.length > 0) {
+                            ordersTable.replaceWith(newTable);
+                            console.log('AJAX refreshed orders table');
+                            
+                            // Re-initialize time updates for new content
+                            initializeTimeUpdates();
+                        }
+                    },
+                    error: function() {
+                        console.error('Failed to refresh orders table via AJAX');
+                    }
+                });
+                return;
+            }
+        }
+        
+        if (isLegacyOrdersPage) {
+            // Legacy orders page refresh
+            const postsTable = $('.wp-list-table.posts');
+            if (postsTable.length > 0) {
+                const currentURL = window.location.href;
+                
+                $.ajax({
+                    url: currentURL,
+                    method: 'GET',
+                    success: function(response) {
+                        const newTable = $(response).find('.wp-list-table.posts');
+                        if (newTable.length > 0) {
+                            postsTable.replaceWith(newTable);
+                            console.log('AJAX refreshed legacy orders table');
+                            
+                            // Re-initialize time updates for new content
+                            initializeTimeUpdates();
+                        }
+                    },
+                    error: function() {
+                        console.error('Failed to refresh legacy orders table via AJAX');
+                    }
+                });
+            }
+        }
+    }
+    
+    // Live time update functionality
+    function updateRelativeTimes() {
+        // Find all time elements that contain relative timestamps
+        const timeSelectors = [
+            '.column-date abbr[title]',           // New orders page
+            '.post-date abbr[title]',             // Legacy orders page
+            'time[datetime]',                     // General time elements
+            '.row-date',                          // Alternative date columns
+            '[data-timestamp]'                    // Custom timestamp attributes
+        ];
+        
+        timeSelectors.forEach(selector => {
+            $(selector).each(function() {
+                const $element = $(this);
+                const datetime = $element.attr('title') || $element.attr('datetime') || $element.data('timestamp');
+                
+                if (datetime) {
+                    try {
+                        const orderDate = new Date(datetime);
+                        const now = new Date();
+                        const diffInSeconds = Math.floor((now - orderDate) / 1000);
+                        
+                        const relativeTime = formatRelativeTime(diffInSeconds);
+                        
+                        // Update the text content, preserve the title/datetime attributes
+                        $element.text(relativeTime);
+                    } catch (e) {
+                        // Ignore invalid dates
+                    }
+                }
+            });
+        });
+    }
+    
+    function formatRelativeTime(seconds) {
+        const i18n = bestWooAlerter.i18n;
+        
+        if (seconds < 60) {
+            if (seconds <= 0) return i18n.just_now;
+            return `${seconds} ${seconds === 1 ? i18n.second : i18n.seconds} ${i18n.ago}`;
+        }
+        
+        const minutes = Math.floor(seconds / 60);
+        if (minutes < 60) {
+            return `${minutes} ${minutes === 1 ? i18n.minute : i18n.minutes} ${i18n.ago}`;
+        }
+        
+        const hours = Math.floor(minutes / 60);
+        if (hours < 24) {
+            return `${hours} ${hours === 1 ? i18n.hour : i18n.hours} ${i18n.ago}`;
+        }
+        
+        const days = Math.floor(hours / 24);
+        if (days < 7) {
+            return `${days} ${days === 1 ? i18n.day : i18n.days} ${i18n.ago}`;
+        }
+        
+        const weeks = Math.floor(days / 7);
+        if (weeks < 4) {
+            return `${weeks} ${weeks === 1 ? i18n.week : i18n.weeks} ${i18n.ago}`;
+        }
+        
+        const months = Math.floor(days / 30);
+        return `${months} ${months === 1 ? i18n.month : i18n.months} ${i18n.ago}`;
+    }
+    
+    function initializeTimeUpdates() {
+        if (!isOrdersPage || !bestWooAlerter.settings.live_time_updates) return;
+        
+        // Clear existing interval
+        if (timeUpdateInterval) {
+            clearInterval(timeUpdateInterval);
+        }
+        
+        // Update times immediately
+        updateRelativeTimes();
+        
+        // Set up interval to update every 30 seconds
+        timeUpdateInterval = setInterval(updateRelativeTimes, 30000);
+        
+        console.log('Live time updates initialized');
+    }
+    
+    function initializeOrdersPageFeatures() {
+        if (!isOrdersPage) return;
+        
+        console.log('Initializing orders page features...');
+        
+        // Initialize live time updates
+        if (bestWooAlerter.settings.live_time_updates) {
+            initializeTimeUpdates();
+        }
+        
+        // Set up auto-refresh if enabled
+        if (bestWooAlerter.settings.auto_refresh) {
+            const refreshInterval = bestWooAlerter.settings.refresh_interval * 1000; // Convert to milliseconds
+            ordersRefreshInterval = setInterval(refreshOrdersTable, refreshInterval);
+            console.log('Orders page auto-refresh set to ' + bestWooAlerter.settings.refresh_interval + ' seconds');
+        }
+    }
+    
     // Event handlers
     $(document).on('click', '#best-woo-alert-dismiss', dismissAlert);
     
@@ -238,6 +472,11 @@ jQuery(function($) {
                         console.log('New order detected:', newOrderNumber, '(was:', currentOrderNumber, ')');
                         currentOrderNumber = newOrderNumber;
                         
+                        // If we're on the orders page, refresh the table immediately
+                        if (isOrdersPage) {
+                            refreshOrdersTable();
+                        }
+                        
                         // Show alert if this is a new order we haven't seen
                         if (newOrderNumber > lastSeenOrderNumber) {
                             showAlert();
@@ -257,15 +496,9 @@ jQuery(function($) {
         });
     }
     
-    // Auto-refresh the orders page using AJAX instead of full page reload
-    if (window.location.pathname.includes('/wp-admin/admin.php') && 
-        window.location.search.includes('page=wc-orders')) {
-        setInterval(function() {
-            // Trigger WooCommerce's built-in AJAX refresh if available
-            if (typeof jQuery.fn.block === 'function') {
-                $('.wc-orders-list-table').closest('form').find('.refresh').trigger('click');
-            }
-        }, 15000);
+    // Initialize orders page features if we're on an orders page
+    if (isOrdersPage) {
+        initializeOrdersPageFeatures();
     }
     
     // Check on initialization - show alert for new orders

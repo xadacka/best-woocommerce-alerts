@@ -2,6 +2,32 @@
 
 All notable changes to this project will be documented in this file.
 
+## [1.0.3] - 2024-03-21
+
+### Added
+- **Auto-Refresh Orders Page**: AJAX-based automatic refreshing of WooCommerce orders table
+- **Live Time Updates**: Timestamps automatically count up (e.g., "6 minutes ago" becomes "7 minutes ago")
+- **Configurable Settings**: Control auto-refresh and live time updates from admin panel
+- **Refresh Interval Setting**: Configure refresh frequency (30-600 seconds, default 2 minutes)
+- **Dual Page Support**: Works with both new HPOS orders page and legacy orders page
+- **Visual Indicators**: Subtle refresh indicator shows when orders table is updating
+- **Translation Support**: Proper i18n support for all relative time strings
+- **Smart Refresh**: Orders table refreshes immediately when new orders are detected
+
+### Enhanced
+- Better detection of different WooCommerce orders page layouts
+- Improved user experience with non-intrusive auto-refresh
+- More granular control over plugin behaviour via settings
+- Enhanced debugging and logging for orders page features
+
+### Technical Details
+- Added `detectOrdersPage()` function for page detection
+- Added `refreshOrdersTable()` with multiple fallback methods
+- Added `updateRelativeTimes()` for live timestamp updates
+- Added `formatRelativeTime()` with proper translation support
+- Added settings for auto_refresh, refresh_interval, and live_time_updates
+- Improved JavaScript modularisation and error handling
+
 ## [1.0.2] - 2024-03-21
 
 ### Added

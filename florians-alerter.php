@@ -3,7 +3,7 @@
 Plugin Name: Best Order Alerter for WooCommerce
 Plugin URI: https://wordpress.org/plugins/best-order-alerter-for-woocommerce/
 Description: Plays a sound in the admin dashboard and flashes the screen red when a new WooCommerce order is received. Also fixes order timestamp issues and provides proper hooks for payment completion. HPOS compatible.
-Version: 1.0.2
+Version: 1.0.3
 Requires at least: 5.0
 Requires PHP: 7.2
 Author: Florian.ie
@@ -106,6 +106,36 @@ function best_woo_alerts_init() {
                 'default' => true
             )
         );
+        
+        register_setting(
+            'best_woo_alerts_options',
+            'best_woo_alerts_auto_refresh',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => 'rest_sanitize_boolean',
+                'default' => true
+            )
+        );
+        
+        register_setting(
+            'best_woo_alerts_options',
+            'best_woo_alerts_refresh_interval',
+            array(
+                'type' => 'integer',
+                'sanitize_callback' => 'absint',
+                'default' => 120
+            )
+        );
+        
+        register_setting(
+            'best_woo_alerts_options',
+            'best_woo_alerts_live_time_updates',
+            array(
+                'type' => 'boolean',
+                'sanitize_callback' => 'rest_sanitize_boolean',
+                'default' => true
+            )
+        );
     });
 
     // Enqueue JS for admin dashboard
@@ -142,6 +172,11 @@ function best_woo_alerts_init() {
             'nonce'    => wp_create_nonce('best_woo_alerts_nonce'),
             'sound'    => get_option('best_woo_alerts_sound', plugin_dir_url(__FILE__) . 'defaultalert.mp3'),
             'current_order_number' => $order_number,
+            'settings' => [
+                'auto_refresh' => get_option('best_woo_alerts_auto_refresh', true),
+                'refresh_interval' => get_option('best_woo_alerts_refresh_interval', 120),
+                'live_time_updates' => get_option('best_woo_alerts_live_time_updates', true),
+            ],
             'i18n' => [
                 'new_order' => esc_html__('NEW ORDER! #', 'best-order-alerter-for-woocommerce'),
                 'dismiss_alert' => esc_html__("I've seen this", 'best-order-alerter-for-woocommerce'),
@@ -149,6 +184,21 @@ function best_woo_alerts_init() {
                 'connected' => esc_html__('Connected', 'best-order-alerter-for-woocommerce'),
                 'disconnected' => esc_html__('Disconnected', 'best-order-alerter-for-woocommerce'),
                 'sound_error' => esc_html__('Could not play sound. Please click the Enable Sound button.', 'best-order-alerter-for-woocommerce'),
+                'auto_refreshing' => esc_html__('Auto-refreshing orders...', 'best-order-alerter-for-woocommerce'),
+                'just_now' => esc_html__('just now', 'best-order-alerter-for-woocommerce'),
+                'second' => esc_html__('second', 'best-order-alerter-for-woocommerce'),
+                'seconds' => esc_html__('seconds', 'best-order-alerter-for-woocommerce'),
+                'minute' => esc_html__('minute', 'best-order-alerter-for-woocommerce'),
+                'minutes' => esc_html__('minutes', 'best-order-alerter-for-woocommerce'),
+                'hour' => esc_html__('hour', 'best-order-alerter-for-woocommerce'),
+                'hours' => esc_html__('hours', 'best-order-alerter-for-woocommerce'),
+                'day' => esc_html__('day', 'best-order-alerter-for-woocommerce'),
+                'days' => esc_html__('days', 'best-order-alerter-for-woocommerce'),
+                'week' => esc_html__('week', 'best-order-alerter-for-woocommerce'),
+                'weeks' => esc_html__('weeks', 'best-order-alerter-for-woocommerce'),
+                'month' => esc_html__('month', 'best-order-alerter-for-woocommerce'),
+                'months' => esc_html__('months', 'best-order-alerter-for-woocommerce'),
+                'ago' => esc_html__('ago', 'best-order-alerter-for-woocommerce'),
             ]
         ]);
     });
@@ -263,6 +313,34 @@ function best_woo_alerts_settings_page() {
                             <?php esc_html_e('Update order date to payment completion time', 'best-order-alerter-for-woocommerce'); ?>
                         </label>
                         <p class="description"><?php esc_html_e('When enabled, orders will show the time they were paid rather than when they were created. This fixes the issue where orders show "1 hour ago" even if they were just paid.', 'best-order-alerter-for-woocommerce'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php esc_html_e('Auto-Refresh Orders', 'best-order-alerter-for-woocommerce'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="best_woo_alerts_auto_refresh" value="1" <?php checked(get_option('best_woo_alerts_auto_refresh', true)); ?> />
+                            <?php esc_html_e('Automatically refresh the orders table', 'best-order-alerter-for-woocommerce'); ?>
+                        </label>
+                        <p class="description"><?php esc_html_e('When enabled, the WooCommerce orders page will automatically refresh to show new orders without requiring a page reload.', 'best-order-alerter-for-woocommerce'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php esc_html_e('Refresh Interval', 'best-order-alerter-for-woocommerce'); ?></th>
+                    <td>
+                        <input type="number" name="best_woo_alerts_refresh_interval" value="<?php echo esc_attr(get_option('best_woo_alerts_refresh_interval', 120)); ?>" min="30" max="600" step="30" class="small-text" />
+                        <?php esc_html_e('seconds', 'best-order-alerter-for-woocommerce'); ?>
+                        <p class="description"><?php esc_html_e('How often to refresh the orders table (30-600 seconds). Default is 120 seconds (2 minutes).', 'best-order-alerter-for-woocommerce'); ?></p>
+                    </td>
+                </tr>
+                <tr>
+                    <th scope="row"><?php esc_html_e('Live Time Updates', 'best-order-alerter-for-woocommerce'); ?></th>
+                    <td>
+                        <label>
+                            <input type="checkbox" name="best_woo_alerts_live_time_updates" value="1" <?php checked(get_option('best_woo_alerts_live_time_updates', true)); ?> />
+                            <?php esc_html_e('Update relative timestamps in real-time', 'best-order-alerter-for-woocommerce'); ?>
+                        </label>
+                        <p class="description"><?php esc_html_e('When enabled, timestamps like "6 minutes ago" will automatically update to "7 minutes ago" as time passes.', 'best-order-alerter-for-woocommerce'); ?></p>
                     </td>
                 </tr>
                 <tr>
